@@ -1,5 +1,7 @@
 "use strict";
 
+import { CHR_PFX } from "./type.js"
+
 const input = document.getElementById("input");
 const output = document.getElementById("output");
 
@@ -11,7 +13,7 @@ function categorise(t) {
     return "paren";
   }
 
-  if (t.startsWith("#\\")) {
+  if (t.startsWith(CHR_PFX)) {
     return "char";
   }
 

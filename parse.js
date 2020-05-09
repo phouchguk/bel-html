@@ -68,11 +68,13 @@ var delims = {
 };
 
 function getChar(t) {
-  if (t.length === 3) {
-    return siToChar(t, 2);
+  const len = CHR_PFX.length;
+
+  if (t.length === len + 1) {
+    return siToChar(t, len);
   }
 
-  switch (t.substring(2)) {
+  switch (t.substring(len)) {
   case "cr":
     return siToChar("\r", 0);
   case "lf":
