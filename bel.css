@@ -1,0 +1,52 @@
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+#output span {
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+span.bad {
+    background-color: #d00;
+    color: #fff;
+}
+
+span.bad-parse {
+    background-color: #00d;
+    color: #fff;
+}
+
+span.char {
+    color: #d00;
+}
+
+span.num {
+    color: #0d0;
+}
+
+span.paren {
+    color: #ddd;
+}
+
+span.sym {
+    color: #0dd;
+}
+
+body {
+    background-color: black;
+    margin: 10px;
+    padding: 0;
+}
+
+textarea {
+    background-color: #111;
+    border: solid 1px #999;
+    color: #ddd;
+    padding: 5px;
+    width: 100%;
+}
