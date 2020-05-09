@@ -14,3 +14,7 @@ export function sym(s) {
 
   return i;
 }
+
+export function getSym(i) {
+  return syms[i];
+}

@@ -10,6 +10,8 @@ const VAL_MASK = Math.pow(2, 29) - 1;
 const CHR_MASK = CHR << 29;
 const NUM_MASK = NUM << 29;
 
+export const CHR_PFX = "\\";
+
 function type(x) {
   return x >> 29;
 }

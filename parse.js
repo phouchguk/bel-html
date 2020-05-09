@@ -1,13 +1,12 @@
 "use strict";
 
-import { toChar, toNum } from "./type.js"
+import { CHR_PFX, toChar, toNum } from "./type.js"
 import { join, car, cdr } from "./pair.js"
 import { nil, sym } from "./sym.js"
 import { Stream } from "./stream.js"
 
 const STRING_ESC = "¬";
 const COMMA_AT = STRING_ESC + "@";
-const CHR_PFX = "\\";
 
 const strings = [];
 
@@ -88,9 +87,7 @@ function getChar(t) {
 }
 
 function reverse(l, term) {
-  var r;
-
-  r = term;
+  let r = term;
 
   while (l !== nil) {
     r = join(car(l), r);
@@ -101,12 +98,10 @@ function reverse(l, term) {
 }
 
 function parseList(s) {
-  var l, t;
-
-  l = nil;
+  let l = nil;
 
   while (true) {
-    t = s.peek();
+    let t = s.peek();
 
     if (t === null) {
       throw new Error("unterminated list");
@@ -158,7 +153,8 @@ export function parse(s) {
     return getChar(t);
   }
 
-  if (t.startsWith("¬")) {
+  if (t.startsWith(STRING_ESC)) {
+    console.log("STRING", getString(parseInt(t.substring(1), 10)))
     return getString(parseInt(t.substring(1), 10));
   }
 
