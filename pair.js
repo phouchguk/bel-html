@@ -11,6 +11,7 @@ function Pair(a, d) {
 
 export function join(a, d) {
   if (!validCell(a)) {
+    console.log(a);
     throw new Error("bad a -- JOIN");
   }
 

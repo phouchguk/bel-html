@@ -3,6 +3,7 @@
 const syms = ["nil", "t", "o", "apply"];
 
 export const nil = 0;
+export const t = 1;
 
 export function sym(s) {
   let i = syms.indexOf(s);

@@ -2,7 +2,7 @@
 
 import { CHR_PFX, toChar, toNum } from "./type.js"
 import { join, car, cdr } from "./pair.js"
-import { nil, sym } from "./sym.js"
+import { nil, sym, t } from "./sym.js"
 import { Stream } from "./stream.js"
 
 const STRING_ESC = "¬";
@@ -134,6 +134,20 @@ function parseList(s) {
   }
 }
 
+function parseSymbol(token) {
+  if (token.indexOf("|") > -1) {
+    let parts = token.split("|");
+
+    if (parts.length !== 2) {
+      throw new Error("bad '|' -- PARSE_SYMBOL");
+    }
+
+    return join(t, join(parseSymbol(parts[0]), join(parseSymbol(parts[1]), nil)));
+  }
+
+  return sym(token);
+}
+
 export function parse(s) {
   const t = s.pop();
 
@@ -154,14 +168,13 @@ export function parse(s) {
   }
 
   if (t.startsWith(STRING_ESC)) {
-    console.log("STRING", getString(parseInt(t.substring(1), 10)))
     return getString(parseInt(t.substring(1), 10));
   }
 
   let n = parseInt(t, 10);
 
   if (isNaN(t)) {
-    return sym(t);
+    return parseSymbol(t);
   }
 
   return toNum(n);
