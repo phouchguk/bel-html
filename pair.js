@@ -30,9 +30,11 @@ export function pair(x) {
 }
 
 export function car(p) {
+  /*
   if (p === nil) {
     return nil;
   }
+  */
 
   if (!pair(p)) {
     throw new Error("can't car non-pair -- CAR");
@@ -42,9 +44,11 @@ export function car(p) {
 }
 
 export function cdr(p) {
+  /*
   if (p === nil) {
     return nil;
   }
+  */
 
   if (!pair(p)) {
     throw new Error("can't cdr non-pair -- CDR");

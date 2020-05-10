@@ -107,9 +107,13 @@ export function binding(v) {
 }
 
 export function inwhere() {
+  if (S === nil) {
+    return false;
+  }
+
   let e = car(car(S));
 
-  if (car(e) === smark && cadr(e) === s_loc) {
+  if (pair(e) && car(e) === smark && cadr(e) === s_loc) {
     return cddr(e);
   }
 
