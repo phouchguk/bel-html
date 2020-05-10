@@ -1,7 +1,7 @@
 "use strict";
 
 import { CHR_PFX, toChar, toNum } from "./type.js"
-import { join, car, cdr } from "./pair.js"
+import { join, car, cdr, reverse } from "./pair.js"
 import { nil, s_quote, sym, t } from "./sym.js"
 import { Stream } from "./stream.js"
 
@@ -86,17 +86,6 @@ function getChar(t) {
   default:
     throw new Error("bad char: " + t);
   }
-}
-
-function reverse(l, term) {
-  let r = term;
-
-  while (l !== nil) {
-    r = join(car(l), r);
-    l = cdr(l);
-  }
-
-  return r;
 }
 
 function parseList(s) {

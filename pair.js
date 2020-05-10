@@ -85,6 +85,10 @@ export function cddr(p) {
   return cdr(cdr(p));
 }
 
+export function caddr(p) {
+  return car(cdr(cdr(p)));
+}
+
 export function l2(a, b) {
   return join(a, join(b, nil));
 }
@@ -98,6 +102,30 @@ export function list() {
 
   return l;
 }
+
+export function get(k, l) {
+  while(l) {
+    let i = car(l);
+
+    if (car(i) === k) {
+      return i;
+    }
+
+    l = cdr(l);
+  }
+}
+
+export function reverse(l, term) {
+  let r = term;
+
+  while (l !== nil) {
+    r = join(car(l), r);
+    l = cdr(l);
+  }
+
+  return r;
+}
+
 
 export const smark = join(nil, nil);
 export const vmark = join(nil, nil);

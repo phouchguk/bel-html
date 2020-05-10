@@ -1,28 +1,13 @@
 "use strict";
 
 import { char, symbol } from "./type.js";
-import { pair, car, cdr, cadr, cddr, join, list, smark, xdr } from "./pair.js";
-import { nil, o, s_apply, s_d, s_err, s_fut, s_globe, s_if, s_lit, s_loc, s_malformed, s_quote, s_scope, s_unbound, s_unfindable, s_where, t } from "./sym.js";
+import { pair, car, cdr, cadr, cddr, caddr, get, join, list, smark, vmark, xdr } from "./pair.js";
+import { nil, o, s_apply, s_bind, s_d, s_dyn, s_err, s_fut, s_globe, s_if, s_lit, s_loc, s_malformed, s_quote, s_scope, s_unbound, s_unfindable, s_where, t } from "./sym.js";
 import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, result, tick } from "./vm.js";
 import { pr } from "./print.js";
 
-// MARKS
-const vmark = join(nil, nil);
-
 function atom(e) {
   return !pair(e);
-}
-
-function get(k, l) {
-  while(l) {
-    let i = car(l);
-
-    if (car(i) === k) {
-      return i;
-    }
-
-    l = cdr(l);
-  }
 }
 
 function all(f, x) {
@@ -175,7 +160,7 @@ function vref(v) {
 }
 
 function special(e) {
-  return e === smark || e === s_quote || e === s_if || e === s_where;
+  return e === smark || e === s_quote || e === s_if || e === s_where || e === s_dyn;
 }
 
 function fu(tag, args) {
@@ -198,6 +183,22 @@ function evfut(tag, args) {
     return;
   }
 
+  if (tag === s_dyn) {
+    args = car(args);
+    let v = car(args);
+    let e2 = cadr(args);
+    let r = popR();
+    let a = regA();
+
+    // bind v to r in stack i.e. dynamic
+    pushS(list(smark, s_bind, join(v, r)), nil);
+
+    // evaluate e2 with v dynamically bound to r
+    pushS(e2, a);
+
+    return;
+  }
+
   throw new Error("unknown fut");
 }
 
@@ -211,6 +212,11 @@ function evmark(f, args) {
 
   if (m === s_loc) {
     sigerr(s_unfindable);
+    return;
+  }
+
+  if (m === s_bind) {
+    // binding expires, do nothing
     return;
   }
 
@@ -252,6 +258,22 @@ function form(f, args) {
     let n = cdr(args) === nil ? nil : cadr(args);
     pushS(list(smark, s_loc, n), nil);
     pushS(e, regA());
+
+    return;
+  }
+
+  if (f === s_dyn) {
+    let v = car(args);
+    let e1 = cadr(args);
+    let e2 = caddr(args);
+
+    let a = regA();
+
+    // queue to bind result of e1 eval to v and eval e2
+    pushS(fu(s_dyn, list(v, e2)), a)
+
+    // evaluate e1 to get value of v
+    pushS(e1, a);
 
     return;
   }
