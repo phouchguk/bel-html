@@ -2,7 +2,7 @@
 
 import { char, symbol } from "./type.js";
 import { pair, car, cdr, cadr, cddr, caddr, get, join, list, smark, vmark, xdr } from "./pair.js";
-import { nil, o, s_after, s_apply, s_bind, s_ccc, s_d, s_dyn, s_err, s_fut, s_globe, s_if, s_lit, s_loc, s_malformed, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, t } from "./sym.js";
+import { nil, o, s_after, s_apply, s_bind, s_ccc, s_clo, s_d, s_dyn, s_err, s_evcall, s_fut, s_globe, s_if, s_lit, s_loc, s_mac, s_malformed, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, t } from "./sym.js";
 import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, regS, regR, result, thread, tick } from "./vm.js";
 import { pr } from "./print.js";
 
@@ -80,14 +80,20 @@ export function bel(e) {
   return result();
 }
 
-function applyf(f, args, a) {
+function applyf(f, args) {
+  console.log("applyf");
+  pr(f);
+  pr(args);
+}
+
+function applym(mac, args) {
 }
 
 function sigerr(e) {
   let val = binding(s_err);
 
   if (val) {
-    applyf(cdr(val), join(e, nil), nil);
+    applyf(cdr(val), join(e, nil));
     return;
   }
 
@@ -202,6 +208,51 @@ function evfut(tag, args) {
   if (tag === s_after) {
     // discard e2 result;
     popR();
+
+    return;
+  }
+
+  if (tag === s_evcall) {
+    let op = popR();
+    let es = car(args);
+
+    console.log("fut evcall");
+    pr(op);
+
+    if (cadr(op) === s_mac) {
+      // macros don't evaluate their args
+      applym(op, es);
+      return;
+    }
+
+    let a = regA();
+
+    // queue fn eval fut (needs es to know how much r of args to pop)
+    pushS(fu(s_clo, list(op, es)), a);
+
+    // queue args onto expression stack
+    while (es) {
+      pushS(car(es), a);
+      es = cdr(es);
+    }
+
+    return;
+  }
+
+  if (tag === s_clo) {
+    args = car(args);
+    let op = car(args);
+    let es = cadr(args);
+
+    args = nil;
+
+    // just using es to pop off the right amount of r args
+    while (es) {
+      args = join(popR(), args);
+      es = cdr(es);
+    }
+
+    applyf(op, args);
 
     return;
   }
@@ -331,6 +382,17 @@ function form(f, args) {
   throw new Error("unknown special");
 }
 
+function evcall(e) {
+  let op = car(e);
+  let a = regA();
+
+  // queue future to eval args
+  pushS(fu(s_evcall, cdr(e)), a);
+
+  // queue eval op
+  pushS(op, a);
+}
+
 function evl() {
   let e = regE();
 
@@ -354,5 +416,6 @@ function evl() {
     return;
   }
 
-  throw new Error("bad exp -- EVL");
+  evcall(e);
+  return;
 }
