@@ -2,7 +2,7 @@
 
 import { char, symbol } from "./type.js";
 import { pair, car, cdr, cadr, cddr, caddr, cdddr, get, join, list, reverse, smark, vmark, xdr } from "./pair.js";
-import { nil, o, s_after, s_apply, s_bind, s_body, s_car, s_cdr, s_ccc, s_clo, s_d, s_destruct, s_dyn, s_env, s_env_add, s_err, s_evcall, s_fut, s_globe, s_id, s_if, s_join, s_lit, s_literal_parm, s_loc, s_mac, s_malformed, s_prim, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, s_xar, s_xdr, t } from "./sym.js";
+import { nil, o, s_after, s_apply, s_bad_clo, s_bind, s_body, s_car, s_cdr, s_ccc, s_char, s_clo, s_d, s_destruct, s_dyn, s_env, s_env_add, s_err, s_evcall, s_fut, s_globe, s_id, s_if, s_join, s_lit, s_literal_parm, s_loc, s_mac, s_mistype, s_malformed, s_prim, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, s_xar, s_xdr, t } from "./sym.js";
 import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, regS, regR, result, thread, tick } from "./vm.js";
 import { pr } from "./print.js";
 
@@ -146,6 +146,14 @@ function applyprim(f, args) {
     return;
   }
 
+  if (f === s_char) {
+    let a = car(args);
+
+    pushR(char(a) ? t : nil);
+
+    return;
+  }
+
   throw new Error("bad prim");
 }
 
@@ -241,7 +249,7 @@ function destructure(pat, arg, env) {
 
 function typecheck(pat, arg, env) {
   let v = car(pat);
-  let r = cadr(pat);
+  let f = cadr(pat);
 
   // evaluate type check result
   pushS(fu(t, list(v, arg)), env);
@@ -767,7 +775,7 @@ function evl() {
 export function bel(e) {
   if (regG() === nil) {
     let g = nil;
-    [s_id, s_join, s_car, s_cdr, s_xar, s_xdr].forEach(p => g = join(join(p, list(s_lit, s_prim, p)), g));
+    [s_id, s_join, s_car, s_cdr, s_xar, s_xdr, s_char].forEach(p => g = join(join(p, list(s_lit, s_prim, p)), g));
     init(e, g);
   } else {
     init(e);
