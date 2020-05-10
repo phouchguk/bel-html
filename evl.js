@@ -2,7 +2,7 @@
 
 import { char, symbol } from "./type.js";
 import { pair, car, cdr, cadr, cddr, caddr, get, join, list, smark, vmark, xdr } from "./pair.js";
-import { nil, o, s_apply, s_bind, s_d, s_dyn, s_err, s_fut, s_globe, s_if, s_lit, s_loc, s_malformed, s_quote, s_scope, s_unbound, s_unfindable, s_where, t } from "./sym.js";
+import { nil, o, s_after, s_apply, s_bind, s_d, s_dyn, s_err, s_fut, s_globe, s_if, s_lit, s_loc, s_malformed, s_prot, s_quote, s_scope, s_unbound, s_unfindable, s_where, t } from "./sym.js";
 import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, result, tick } from "./vm.js";
 import { pr } from "./print.js";
 
@@ -160,7 +160,7 @@ function vref(v) {
 }
 
 function special(e) {
-  return e === smark || e === s_quote || e === s_if || e === s_where || e === s_dyn;
+  return e === smark || e === s_quote || e === s_if || e === s_where || e === s_dyn || e === s_after;
 }
 
 function fu(tag, args) {
@@ -199,6 +199,13 @@ function evfut(tag, args) {
     return;
   }
 
+  if (tag === s_after) {
+    // discard e2 result;
+    popR();
+
+    return;
+  }
+
   throw new Error("unknown fut");
 }
 
@@ -217,6 +224,19 @@ function evmark(f, args) {
 
   if (m === s_bind) {
     // binding expires, do nothing
+    return;
+  }
+
+  if (m === s_prot) {
+    let a = regA();
+    let e2 = cadr(args);
+
+    // queue future to discard e2's result (so e1's result remains)
+    pushS(fu(s_after, nil), a);
+
+    // queue e2
+    pushS(e2, a);
+
     return;
   }
 
@@ -273,6 +293,18 @@ function form(f, args) {
     pushS(fu(s_dyn, list(v, e2)), a)
 
     // evaluate e1 to get value of v
+    pushS(e1, a);
+
+    return;
+  }
+
+  if (f === s_after) {
+    let a = regA();
+
+    let e1 = car(args);
+    let e2 = cadr(args);
+
+    pushS(list(smark, s_prot, e2), a);
     pushS(e1, a);
 
     return;
