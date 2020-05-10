@@ -1,6 +1,6 @@
 "use strict";
 
-const syms = ["nil", "t", "o", "apply", "lit", "scope", "globe", "unbound", "err", "malformed", "quote", "if", "fut", "lock", "where", "loc", "unfindable", "d", "dyn", "bind", "after", "prot", "ccc", "cont", "thread", "evcall", "mac", "clo", "prim", "car", "cdr", "xar", "xdr", "join", "id"];
+const syms = ["nil", "t", "o", "apply", "lit", "scope", "globe", "unbound", "err", "malformed", "quote", "if", "fut", "lock", "where", "loc", "unfindable", "d", "dyn", "bind", "after", "prot", "ccc", "cont", "thread", "evcall", "mac", "clo", "prim", "car", "cdr", "xar", "xdr", "join", "id", "body", "env", "destruct", "env-add", "literal-parm"];
 
 export const nil = 0;
 export const t = 1;
@@ -38,6 +38,11 @@ export const s_xar = 31;
 export const s_xdr = 32;
 export const s_join = 33;
 export const s_id = 34;
+export const s_body = 35;
+export const s_env = 36;
+export const s_destruct = 37;
+export const s_env_add = 38;
+export const s_literal_parm = 39;
 
 export function sym(s) {
   let i = syms.indexOf(s);

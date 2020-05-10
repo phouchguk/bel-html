@@ -1,8 +1,8 @@
 "use strict";
 
 import { char, symbol } from "./type.js";
-import { pair, car, cdr, cadr, cddr, caddr, get, join, list, reverse, smark, vmark, xdr } from "./pair.js";
-import { nil, o, s_after, s_apply, s_bind, s_car, s_cdr, s_ccc, s_clo, s_d, s_dyn, s_err, s_evcall, s_fut, s_globe, s_id, s_if, s_join, s_lit, s_loc, s_mac, s_malformed, s_prim, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, s_xar, s_xdr, t } from "./sym.js";
+import { pair, car, cdr, cadr, cddr, caddr, cdddr, get, join, list, reverse, smark, vmark, xdr } from "./pair.js";
+import { nil, o, s_after, s_apply, s_bind, s_body, s_car, s_cdr, s_ccc, s_clo, s_d, s_destruct, s_dyn, s_env, s_env_add, s_err, s_evcall, s_fut, s_globe, s_id, s_if, s_join, s_lit, s_literal_parm, s_loc, s_mac, s_malformed, s_prim, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, s_xar, s_xdr, t } from "./sym.js";
 import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, regS, regR, result, thread, tick } from "./vm.js";
 import { pr } from "./print.js";
 
@@ -149,6 +149,147 @@ function applyprim(f, args) {
   throw new Error("bad prim");
 }
 
+function okenv(a) {
+  return proper(a) && all(pair, a);
+}
+
+function okparms(p) {
+  if (p === nil) {
+    return true;
+  }
+
+  if (variable(p)) {
+    return true;
+  }
+
+  if (atom(p)) {
+    return false;
+  }
+
+  let a = car(p);
+
+  if (a === t) {
+    return oktoparm(p);
+  }
+
+  let d = cdr(p);
+
+  if (pair(a) && car(a) === o) {
+    return oktoparm(a) && okparms(d);
+  }
+
+  return okparms(a) && okparms(d);
+}
+
+function oktoparm(p) {
+  let v, e, extra;
+  let tag = car(p);
+
+  if (cdr(p) === nil) {
+    v = nil;
+    e = nil;
+    extra = nil;
+  } else {
+    v = cadr(p);
+
+    if (cddr(p) === nil) {
+      e = nil;
+      extra = nil;
+    } else {
+      e = caddr(p);
+      extra = cdddr(p);
+    }
+  }
+
+  return okparms(v) && ((tag === o) || e !== nil) && extra === nil;
+}
+
+function destructure(pat, arg, env) {
+  let p = car(pat);
+  let ps = cdr(pat);
+
+  if (arg === nil) {
+    if (car(p) === o) {
+      // optional parm
+
+      // evaluate the rest of the parms, with optional p in the environment (evaluated and put in r)
+      pushS(fu(s_destruct, list(ps, nil)), nil);
+
+      // put optional arg in env (takes the evaluated value, different from non-optional below)
+      pushS(fu(o, cadr(p)), env);
+
+      // evaluate the optional arg
+      pushS(cddr(p) === nil ? nil : caddr(p), env);
+    } else {
+      sigerr(s_underargs);
+    }
+
+    return;
+  }
+
+  if (atom(arg)) {
+    sigerr(s_atom_arg);
+    return;
+  }
+
+  // evaluate other args
+  pushS(fu(s_destruct, list(ps, cdr(arg))), nil);
+
+  // add the arg to the environment (we're explicitly giving it the value)
+  pushS(fu(s_env_add, list(p, car(arg))), env);
+}
+
+function typecheck(pat, arg, env) {
+  let v = car(pat);
+  let r = cadr(pat);
+
+  // evaluate type check result
+  pushS(fu(t, list(v, arg)), env);
+
+  // evaluate the type check
+  pushS(list(f, list(s_quote, arg)), env);
+}
+
+function pass(pat, arg, env) {
+  if (pat === nil) {
+    if (arg !== nil) {
+      sigerr(s_overargs);
+      return;
+    }
+
+    // done
+    pushR(env);
+    return;
+  }
+
+  if (literal(pat)) {
+    sigerr(s_literal_parm);
+    return;
+  }
+
+  if (variable(pat)) {
+    pushR(join(join(pat, arg), env));
+    return;
+  }
+
+  if (car(pat) === t) {
+    typecheck(cdr(pat), arg, env);
+    return;
+  }
+
+  if (car(pat) === o) {
+    pass(cadr(pat), arg, env);
+    return;
+  }
+
+  destructure(pat, arg, env);
+}
+
+function applyclo(parms, args, env, body) {
+  pushS(fu(s_body, body), nil);
+  pushS(fu(s_env, list(parms, args, env)), nil);
+}
+
 function applylit(f, args) {
   // if inwhere and calling car or cdr need to wrap somehow?
 
@@ -162,7 +303,36 @@ function applylit(f, args) {
   }
 
   if (tag == s_clo) {
+    let env, parms, body;
 
+    if (rest === nil) {
+      env = nil;
+      parms = nil;
+      body = nil;
+    } else {
+      env = car(rest);
+
+      if (cdr(rest) === nil) {
+        parms = nil;
+        body = nil;
+      } else {
+        parms = cadr(rest);
+
+        if (cddr(rest) === nil) {
+          body = nil;
+        } else {
+          body = caddr(rest);
+        }
+      }
+    }
+
+    if (okenv(env) && okparms(parms)) {
+      applyclo(parms, args, env, body);
+      return;
+    }
+
+    sigerr(s_bad_clo);
+    return;
   }
 
   if (tag === s_cont) {
@@ -360,6 +530,74 @@ function evfut(tag, args) {
 
     applyf(op, reverse(args, nil));
 
+    return;
+  }
+
+  if (tag === s_env) {
+    // evaluate clo parms
+    args = car(args);
+    let parms = car(args);
+    let env = caddr(args);
+    args = cadr(args);
+
+    pass(parms, args, env);
+    return;
+  }
+
+  if (tag === s_body) {
+    // finished evaluating parms, evaluate clo body
+    let body = car(args);
+    let env = popR();
+
+    pushS(body, env);
+    return;
+  }
+
+  if (tag === t) {
+    // typecheck result
+    args = car(args);
+    let v = car(args);
+    let arg = cadr(args);
+
+    let r = popR();
+    let env = regA();
+
+    if (r === nil) {
+      // parm failed typecheck
+      sigerr(s_mistype);
+      return;
+    }
+
+    pass(v, arg, env);
+    return;
+  }
+
+  if (tag === s_destruct) {
+    args = car(args);
+    let pat = car(args);
+    let arg = cadr(args);
+    let env = popR();
+
+    pass(pat, arg, env);
+    return;
+  }
+
+  if (tag === o) {
+    let pat = car(args);
+    let arg = popR();
+    let env = regA();
+
+    pass(pat, arg, env);
+    return;
+  }
+
+  if (tag === s_env_add) {
+    args = car(args);
+    let pat = car(args);
+    let arg = cadr(args);
+    let env = regA();
+
+    pass(pat, arg, env);
     return;
   }
 

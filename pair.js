@@ -81,6 +81,10 @@ export function caddr(p) {
   return car(cdr(cdr(p)));
 }
 
+export function cdddr(p) {
+  return cdr(cdr(cdr(p)));
+}
+
 export function l2(a, b) {
   return join(a, join(b, nil));
 }
