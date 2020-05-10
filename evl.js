@@ -374,6 +374,8 @@ function applyf(f, args) {
 }
 
 function applym(mac, args) {
+  pushS(fu(s_mac, nil), regA());
+  applyf(caddr(mac), args);
 }
 
 function sigerr(e) {
@@ -606,6 +608,11 @@ function evfut(tag, args) {
     let env = regA();
 
     pass(pat, arg, env);
+    return;
+  }
+
+  if (tag === s_mac) {
+    pushS(popR(), regA());
     return;
   }
 
