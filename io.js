@@ -1,6 +1,10 @@
 "use strict";
 
 import { CHR_PFX } from "./type.js"
+import { nil } from "./sym.js"
+import { parse, tokenise } from "./parse.js"
+import { print } from "./print.js"
+import { Stream } from "./stream.js"
 
 const input = document.getElementById("input");
 const output = document.getElementById("output");
@@ -37,3 +41,45 @@ function htmlify(t) {
 export function display(s) {
   output.innerHTML = s.tx.map(htmlify).join("");
 }
+
+function processInput() {
+  let inS = input.value.trim();
+
+  if (inS === "") {
+    return;
+  }
+
+  output.innerHTML = "";
+  let tokens = tokenise("(begin " + inS + ")");
+  let e = nil;
+
+  try {
+    e = parse(tokens);
+  } catch (err) {
+    output.innerHTML = span("bad-parse", err.message);
+    return;
+  }
+
+  /*
+  try {
+    e = lisp(e, initialEnvironment);
+  } catch (e) {
+    output.innerHTML = span("bad", e.message);
+    return;
+  }
+  */
+
+  let o = new Stream([]);
+  print(o, e);
+  display(o);
+}
+
+function keyUp(e) {
+  if (e.keyCode === 13) {
+    processInput();
+    input.value = "";
+  }
+}
+
+input.addEventListener("keyup", keyUp, true);
+input.focus();

@@ -43,7 +43,7 @@ body {
     padding: 0;
 }
 
-textarea {
+input, textarea {
     background-color: #111;
     border: solid 1px #999;
     color: #ddd;
