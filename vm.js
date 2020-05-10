@@ -1,7 +1,8 @@
 "use strict";
 
+import { toNum } from "./type.js";
 import { join, pair, car, cdr, cadr, xdr } from "./pair.js";
-import { nil } from "./sym.js";
+import { nil, sym } from "./sym.js";
 
 // STACKS
 
@@ -24,7 +25,11 @@ let E = nil;
 let A = nil;
 
 // global environment
-let G = nil;
+let G = join(tvar("a", 42), join(tvar("b", 99), nil));
+
+function tvar(v, val) {
+  return join(sym(v), toNum(val))
+}
 
 function pushP() {
   let sr = join(S, join(R, nil));
@@ -74,7 +79,7 @@ export function init(e) {
   E = e;
 
   // clear everything except the global env
-  A = nil;
+  A = join(tvar("a", 123), nil);
 
   S = nil;
   R = nil;
@@ -87,6 +92,10 @@ export function regE() {
 
 export function regA() {
   return A;
+}
+
+export function regG() {
+  return G;
 }
 
 export function result() {
