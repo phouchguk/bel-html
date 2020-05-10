@@ -1,6 +1,6 @@
 "use strict";
 
-const syms = ["nil", "t", "o", "apply", "lit", "scope", "globe", "unbound", "err", "malformed", "quote", "if", "fut", "lock"];
+const syms = ["nil", "t", "o", "apply", "lit", "scope", "globe", "unbound", "err", "malformed", "quote", "if", "fut", "lock", "where", "loc", "unfindable", "d"];
 
 export const nil = 0;
 export const t = 1;
@@ -17,6 +17,10 @@ export const s_quote = 10;
 export const s_if = 11;
 export const s_fut = 12;
 export const s_lock = 13;
+export const s_where = 14;
+export const s_loc = 15;
+export const s_unfindable = 16;
+export const s_d = 17;
 
 export function sym(s) {
   let i = syms.indexOf(s);

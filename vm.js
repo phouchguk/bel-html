@@ -1,8 +1,8 @@
 "use strict";
 
 import { toNum } from "./type.js";
-import { join, pair, car, cdr, cadr, l2, xdr } from "./pair.js";
-import { nil, s_lock, sym } from "./sym.js";
+import { join, pair, car, cdr, cadr, cddr, l2, smark, xdr } from "./pair.js";
+import { nil, s_loc, s_lock, sym } from "./sym.js";
 
 // STACKS
 
@@ -67,6 +67,10 @@ function popP() {
   popS();
 }
 
+export function dropS() {
+  S = cdr(S);
+}
+
 function popS() {
   let ea = car(S);
   S = cdr(S);
@@ -80,6 +84,12 @@ export function binding(v) {
 }
 
 export function inwhere() {
+  let e = car(car(S));
+
+  if (car(e) === smark && cadr(e) === s_loc) {
+    return cddr(e);
+  }
+
   return false;
 }
 

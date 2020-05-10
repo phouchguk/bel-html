@@ -1,9 +1,9 @@
 "use strict";
 
 import { char, symbol } from "./type.js";
-import { pair, car, cdr, cadr, cddr, join, list, smark } from "./pair.js";
-import { nil, o, s_apply, s_globe, s_err, s_fut, s_if, s_lit, s_malformed, s_quote, s_scope, s_unbound, t } from "./sym.js";
-import { binding, init, inwhere, popR, pushR, pushS, regA, regE, regG, result, tick } from "./vm.js";
+import { pair, car, cdr, cadr, cddr, join, list, smark, xdr } from "./pair.js";
+import { nil, o, s_apply, s_d, s_err, s_fut, s_globe, s_if, s_lit, s_loc, s_malformed, s_quote, s_scope, s_unbound, s_unfindable, s_where, t } from "./sym.js";
+import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, result, tick } from "./vm.js";
 import { pr } from "./print.js";
 
 // MARKS
@@ -142,12 +142,30 @@ function lookup(v) {
 }
 
 function vref(v) {
-  if (inwhere()) {
-    // blah
-    return nil;
-  }
-
   let val = lookup(v);
+  let w = inwhere();
+
+  if (w) {
+    dropS(); // drop where smark in stack
+
+    if (val) {
+      // variable already exists, return its location
+      pushR(list(val, s_d));
+      return;
+    }
+
+    if (car(w) !== nil) {
+      // if 'new' set, create a new variable
+      let cell = join(v, nil);
+      let g = regG();
+      xdr(g, join(cell, cdr(g)));
+      pushR(list(cell, s_d));
+
+      return;
+    }
+
+    sigerr(s_unbound);
+  }
 
   if (val) {
     pushR(cdr(val));
@@ -157,7 +175,7 @@ function vref(v) {
 }
 
 function special(e) {
-  return e === smark || e === s_quote || e === s_if;
+  return e === smark || e === s_quote || e === s_if || e === s_where;
 }
 
 function fu(tag, args) {
@@ -191,12 +209,18 @@ function evmark(f, args) {
     return;
   }
 
+  if (m === s_loc) {
+    sigerr(s_unfindable);
+    return;
+  }
+
   throw new Error("unknown mark");
 }
 
 function form(f, args) {
   if (f === smark) {
     evmark(f, args);
+    return;
   }
 
   if (f === s_quote) {
@@ -222,6 +246,17 @@ function form(f, args) {
 
     return;
   }
+
+  if (f === s_where) {
+    let e = car(args);
+    let n = cdr(args) === nil ? nil : cadr(args);
+    pushS(list(smark, s_loc, n), nil);
+    pushS(e, regA());
+
+    return;
+  }
+
+  throw new Error("unknown special");
 }
 
 function evl() {
