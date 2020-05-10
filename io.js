@@ -5,7 +5,7 @@ import { nil } from "./sym.js"
 import { parse, tokenise } from "./parse.js"
 import { print } from "./print.js"
 import { Stream } from "./stream.js"
-import { evl } from "./evl.js"
+import { bel } from "./evl.js"
 
 const input = document.getElementById("input");
 const output = document.getElementById("output");
@@ -62,7 +62,7 @@ function processInput() {
   }
 
   try {
-    e = evl(e, nil);
+    e = bel(e);
   } catch (e) {
     output.innerHTML = span("bad", e.message);
     return;

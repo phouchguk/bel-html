@@ -66,3 +66,7 @@ export function xdr(p, val) {
 
   p.d = val;
 }
+
+export function cadr(p) {
+  return car(cdr(p));
+}
