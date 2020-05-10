@@ -2,7 +2,7 @@
 
 import { char, symbol } from "./type.js";
 import { pair, car, cdr, cadr, cddr, caddr, get, join, list, reverse, smark, vmark, xdr } from "./pair.js";
-import { nil, o, s_after, s_apply, s_bind, s_car, s_cdr, s_ccc, s_clo, s_d, s_dyn, s_err, s_evcall, s_fut, s_globe, s_if, s_lit, s_loc, s_mac, s_malformed, s_prim, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, t } from "./sym.js";
+import { nil, o, s_after, s_apply, s_bind, s_car, s_cdr, s_ccc, s_clo, s_d, s_dyn, s_err, s_evcall, s_fut, s_globe, s_id, s_if, s_join, s_lit, s_loc, s_mac, s_malformed, s_prim, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, s_xar, s_xdr, t } from "./sym.js";
 import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, regS, regR, result, thread, tick } from "./vm.js";
 import { pr } from "./print.js";
 
@@ -70,16 +70,6 @@ function variable(e) {
   return atom(e) ? !literal(e) : car(e) === vmark;
 }
 
-export function bel(e) {
-  init(e);
-
-  do {
-    evl()
-  } while (tick());
-
-  return result();
-}
-
 function applyprim(f, args) {
   if (f === s_car) {
     pushR(car(car(args)));
@@ -88,6 +78,44 @@ function applyprim(f, args) {
 
   if (f === s_cdr) {
     pushR(cdr(car(args)));
+    return;
+  }
+
+  if (f === s_xar) {
+    let p = car(args);
+    let a = cadr(args);
+
+    xar(p, a);
+    pushR(a);
+
+    return;
+  }
+
+  if (f === s_xdr) {
+    let p = car(args);
+    let d = cadr(args);
+
+    xdr(p, d);
+    pushR(d);
+
+    return;
+  }
+
+  if (f === s_join) {
+    let a = car(args);
+    let d = cadr(args);
+
+    pushR(join(a, d));
+
+    return;
+  }
+
+  if (f === s_id) {
+    let a = car(args);
+    let b = cadr(args);
+
+    pushR(a === b ? t : nil);
+
     return;
   }
 
@@ -469,4 +497,20 @@ function evl() {
 
   evcall(e);
   return;
+}
+
+export function bel(e) {
+  if (regG() === nil) {
+    let g = nil;
+    [s_id, s_join, s_car, s_cdr, s_xar, s_xdr].forEach(p => g = join(join(p, list(s_lit, s_prim, p)), g));
+    init(e, g);
+  } else {
+    init(e);
+  }
+
+  do {
+    evl()
+  } while (tick());
+
+  return result();
 }

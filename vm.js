@@ -26,7 +26,7 @@ let E = nil;
 let A = nil;
 
 // global environment
-let G = l2(tvar("a", 42), tvar("b", 99));
+let G = nil;
 
 function tvar(v, val) {
   return join(sym(v), toNum(val))
@@ -116,7 +116,7 @@ export function inwhere() {
   return false;
 }
 
-export function init(e) {
+export function init(e, g) {
   // read expression to evaluate
   E = e;
 
@@ -126,6 +126,10 @@ export function init(e) {
   S = nil;
   R = nil;
   P = nil;
+
+  if (g) {
+    G = g;
+  }
 }
 
 export function regE() {
