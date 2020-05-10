@@ -72,12 +72,27 @@ function variable(e) {
 
 function applyprim(f, args) {
   if (f === s_car) {
-    pushR(car(car(args)));
+    // built-in car is stricter than bel car. doesn't allow nils.
+    let p = car(args);
+
+    if (p === nil) {
+      pushR(nil);
+    } else {
+      pushR(car(p));
+    }
+
     return;
   }
 
   if (f === s_cdr) {
-    pushR(cdr(car(args)));
+    let p = car(args);
+
+    if (p === nil) {
+      pushR(nil);
+    } else {
+      pushR(cdr(p));
+    }
+
     return;
   }
 
@@ -102,8 +117,20 @@ function applyprim(f, args) {
   }
 
   if (f === s_join) {
-    let a = car(args);
-    let d = cadr(args);
+    let a, d;
+
+    if (args === nil) {
+      a = nil;
+      d = nil;
+    } else {
+      a = car(args);
+
+      if (cdr(args) === nil) {
+        d = nil;
+      } else {
+        d = cadr(args);
+      }
+    }
 
     pushR(join(a, d));
 
