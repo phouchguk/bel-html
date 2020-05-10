@@ -3,6 +3,7 @@
 import { CHR_PFX, char, number, symbol, val } from "./type.js";
 import { getSym, nil } from "./sym.js";
 import { car, cdr, pair } from "./pair.js";
+import { Stream } from "./stream.js";
 
 function printChar(c) {
   switch (c) {
@@ -58,4 +59,10 @@ export function print(o, x) {
 
   console.log(x);
   throw new Error("bad type -- PRINT");
+}
+
+export function pr(e) {
+  const o = new Stream([]);
+  print(o, e);
+  console.log(o.tx.join(" "));
 }

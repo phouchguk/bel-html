@@ -1,8 +1,8 @@
 "use strict";
 
 import { toNum } from "./type.js";
-import { join, pair, car, cdr, cadr, xdr } from "./pair.js";
-import { nil, sym } from "./sym.js";
+import { join, pair, car, cdr, cadr, l2, xdr } from "./pair.js";
+import { nil, s_lock, sym } from "./sym.js";
 
 // STACKS
 
@@ -25,16 +25,14 @@ let E = nil;
 let A = nil;
 
 // global environment
-let G = join(tvar("a", 42), join(tvar("b", 99), nil));
-
-const smark = join(nil, nil);
+let G = l2(tvar("a", 42), tvar("b", 99));
 
 function tvar(v, val) {
   return join(sym(v), toNum(val))
 }
 
 function pushP() {
-  let sr = join(S, join(R, nil));
+  let sr = l2(S, R);
   let t = join(sr, nil)
 
   if (P === nil) {
@@ -52,6 +50,11 @@ function pushP() {
 
     p = cdr(p);
   }
+}
+
+export function pushS(e, a) {
+  let ea = l2(e, a);
+  S = join(ea, S);
 }
 
 function popP() {
@@ -110,6 +113,13 @@ export function result() {
 
 export function pushR(e) {
   R = join(e, R);
+}
+
+export function popR(e) {
+  let r = car(R);
+  R = cdr(R);
+
+  return r;
 }
 
 export function tick() {

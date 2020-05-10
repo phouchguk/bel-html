@@ -1,5 +1,7 @@
 "use strict";
 
+import { nil } from "./sym.js";
+
 function validCell(x) {
   return pair(x) || typeof x === "number";
 }
@@ -70,3 +72,24 @@ export function xdr(p, val) {
 export function cadr(p) {
   return car(cdr(p));
 }
+
+export function cddr(p) {
+  return cdr(cdr(p));
+}
+
+export function l2(a, b) {
+  return join(a, join(b, nil));
+}
+
+export function list() {
+  let l = nil;
+
+  for (let i = arguments.length - 1; i >=0; i--) {
+    l = join(arguments[i], l);
+  }
+
+  return l;
+}
+
+export const smark = join(nil, nil);
+export const vmark = join(nil, nil);
