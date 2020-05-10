@@ -1,7 +1,7 @@
 "use strict";
 
 import { toNum } from "./type.js";
-import { join, pair, car, cdr, cadr, cddr, caddr, get, l2, reverse, smark, xdr } from "./pair.js";
+import { join, pair, car, cdr, cadr, cddr, caddr, get, l2, list, reverse, smark, xdr } from "./pair.js";
 import { nil, s_bind, s_loc, s_lock, sym } from "./sym.js";
 import { pr } from "./print.js";
 
@@ -32,8 +32,8 @@ function tvar(v, val) {
   return join(sym(v), toNum(val))
 }
 
-function pushP() {
-  let sr = l2(S, R);
+function pushP(s, r) {
+  let sr = l2(s, r);
   let t = join(sr, nil)
 
   if (P === nil) {
@@ -56,6 +56,14 @@ function pushP() {
 export function pushS(e, a) {
   let ea = l2(e, a);
   S = join(ea, S);
+}
+
+export function thread(e) {
+  // expression stack for the new thread with one expression and current lexical environment
+  let s = join(list(e, A), nil);
+
+  // queue thread with nil return stack 'r'
+  pushP(s, nil);
 }
 
 function popP() {
@@ -132,6 +140,15 @@ export function regG() {
   return G;
 }
 
+// S and R used in ccc
+export function regS() {
+  return S;
+}
+
+export function regR() {
+  return R;
+}
+
 export function result() {
   return car(R);
 }
@@ -165,7 +182,7 @@ export function tick() {
       popS();
     } else {
       // push the current thread to the back of the thread stack, pop the next thread
-      pushP();
+      pushP(S, R);
       popP();
     }
   }

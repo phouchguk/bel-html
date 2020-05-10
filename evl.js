@@ -2,8 +2,8 @@
 
 import { char, symbol } from "./type.js";
 import { pair, car, cdr, cadr, cddr, caddr, get, join, list, smark, vmark, xdr } from "./pair.js";
-import { nil, o, s_after, s_apply, s_bind, s_d, s_dyn, s_err, s_fut, s_globe, s_if, s_lit, s_loc, s_malformed, s_prot, s_quote, s_scope, s_unbound, s_unfindable, s_where, t } from "./sym.js";
-import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, result, tick } from "./vm.js";
+import { nil, o, s_after, s_apply, s_bind, s_ccc, s_d, s_dyn, s_err, s_fut, s_globe, s_if, s_lit, s_loc, s_malformed, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, t } from "./sym.js";
+import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, regS, regR, result, thread, tick } from "./vm.js";
 import { pr } from "./print.js";
 
 function atom(e) {
@@ -160,7 +160,7 @@ function vref(v) {
 }
 
 function special(e) {
-  return e === smark || e === s_quote || e === s_if || e === s_where || e === s_dyn || e === s_after;
+  return e === smark || e === s_quote || e === s_if || e === s_where || e === s_dyn || e === s_after || e === s_ccc || e === s_thread;
 }
 
 function fu(tag, args) {
@@ -306,6 +306,24 @@ function form(f, args) {
 
     pushS(list(smark, s_prot, e2), a);
     pushS(e1, a);
+
+    return;
+  }
+
+  if (f === s_ccc) {
+    let a = regA();
+    let f = car(args);
+
+    pushS(list(f, list(s_lit, s_cont, regS(), regR())), a);
+
+    return;
+  }
+
+  if (f === s_thread) {
+    let e = car(args);
+
+    pushR(nil); // result of thread call in current thread is nil
+    thread(e); // queue e on a new thread
 
     return;
   }
