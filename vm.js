@@ -27,6 +27,8 @@ let A = nil;
 // global environment
 let G = join(tvar("a", 42), join(tvar("b", 99), nil));
 
+const smark = join(nil, nil);
+
 function tvar(v, val) {
   return join(sym(v), toNum(val))
 }
@@ -71,6 +73,10 @@ function popS() {
 }
 
 export function binding(v) {
+  return false;
+}
+
+export function inwhere() {
   return false;
 }
 

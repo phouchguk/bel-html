@@ -2,11 +2,10 @@
 
 import { char, symbol } from "./type.js";
 import { pair, car, cdr, join } from "./pair.js";
-import { nil, o, s_apply, s_globe, s_err, s_lit, s_scope, s_unbound, t } from "./sym.js";
-import { binding, init, pushR, regA, regE, regG, result, tick } from "./vm.js";
+import { nil, o, s_apply, s_globe, s_err, s_lit, s_malformed, s_quote, s_scope, s_unbound, t } from "./sym.js";
+import { binding, init, inwhere, pushR, regA, regE, regG, result, tick } from "./vm.js";
 
 // MARKS
-const smark = join(nil, nil);
 const vmark = join(nil, nil);
 
 function atom(e) {
@@ -95,10 +94,6 @@ export function bel(e) {
   return result();
 }
 
-function inwhere() {
-  return false;
-}
-
 function applyf(f, args, a) {
 }
 
@@ -160,6 +155,17 @@ function vref(v) {
   }
 }
 
+function special(e) {
+  return e === s_quote;
+}
+
+function form(f, args) {
+  if (f === s_quote) {
+    pushR(car(args));
+    return;
+  }
+}
+
 function evl() {
   let e = regE();
 
@@ -170,6 +176,16 @@ function evl() {
 
   if (variable(e)) {
     vref(e);
+    return;
+  }
+
+  if (!proper(e)) {
+    sigerr(s_malformed);
+    return;
+  }
+
+  if (special(car(e))) {
+    form(car(e), cdr(e));
     return;
   }
 

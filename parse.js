@@ -2,7 +2,7 @@
 
 import { CHR_PFX, toChar, toNum } from "./type.js"
 import { join, car, cdr } from "./pair.js"
-import { nil, sym, t } from "./sym.js"
+import { nil, s_quote, sym, t } from "./sym.js"
 import { Stream } from "./stream.js"
 
 const STRING_ESC = "¬";
@@ -61,7 +61,7 @@ export function tokenise(s) {
 }
 
 var delims = {
-  "'": sym("quote"),
+  "'": s_quote,
   "`": sym("bquote"),
   ",": sym("comma"),
   UNQUOTE_SPLICE: sym("comma-at")
