@@ -1,8 +1,8 @@
 "use strict";
 
 import { char, symbol } from "./type.js";
-import { pair, car, cdr, cadr, cddr, caddr, get, join, list, smark, vmark, xdr } from "./pair.js";
-import { nil, o, s_after, s_apply, s_bind, s_ccc, s_clo, s_d, s_dyn, s_err, s_evcall, s_fut, s_globe, s_if, s_lit, s_loc, s_mac, s_malformed, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, t } from "./sym.js";
+import { pair, car, cdr, cadr, cddr, caddr, get, join, list, reverse, smark, vmark, xdr } from "./pair.js";
+import { nil, o, s_after, s_apply, s_bind, s_car, s_cdr, s_ccc, s_clo, s_d, s_dyn, s_err, s_evcall, s_fut, s_globe, s_if, s_lit, s_loc, s_mac, s_malformed, s_prim, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, t } from "./sym.js";
 import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, regS, regR, result, thread, tick } from "./vm.js";
 import { pr } from "./print.js";
 
@@ -80,10 +80,64 @@ export function bel(e) {
   return result();
 }
 
-function applyf(f, args) {
-  console.log("applyf");
+function applyprim(f, args) {
+  if (f === s_car) {
+    pushR(car(car(args)));
+    return;
+  }
+
+  if (f === s_cdr) {
+    pushR(cdr(car(args)));
+    return;
+  }
+
+  throw new Error("bad prim");
+}
+
+function applylit(f, args) {
+  // if inwhere and calling car or cdr need to wrap somehow?
+
+  let lit = cdr(f);
+  let tag = car(lit);
+  let rest = cdr(lit);
+
+  if (tag === s_prim) {
+    applyprim(car(rest), args);
+    return;
+  }
+
+  if (tag == s_clo) {
+
+  }
+
+  if (tag === s_cont) {
+
+  }
+
+  console.log("applylit");
   pr(f);
   pr(args);
+}
+
+function applyf(f, args) {
+  if (f === s_apply) {
+    f = car(args);
+
+    let rev = reverse(cdr(args), nil);
+    args = reverse(cdr(rev), car(rev));
+  }
+
+  if (!pair(f) && car(f) === s_lit) {
+    sigerr(s_cannot_apply);
+    return;
+  }
+
+  if (!proper(f)) {
+    sigerr(s_bad_lit);
+    return;
+  }
+
+  applylit(f, args);
 }
 
 function applym(mac, args) {
@@ -216,10 +270,7 @@ function evfut(tag, args) {
     let op = popR();
     let es = car(args);
 
-    console.log("fut evcall");
-    pr(op);
-
-    if (cadr(op) === s_mac) {
+    if (op !== s_apply && cadr(op) === s_mac) {
       // macros don't evaluate their args
       applym(op, es);
       return;
@@ -252,7 +303,7 @@ function evfut(tag, args) {
       es = cdr(es);
     }
 
-    applyf(op, args);
+    applyf(op, reverse(args, nil));
 
     return;
   }
