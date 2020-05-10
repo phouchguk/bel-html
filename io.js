@@ -5,6 +5,7 @@ import { nil } from "./sym.js"
 import { parse, tokenise } from "./parse.js"
 import { print } from "./print.js"
 import { Stream } from "./stream.js"
+import { evl } from "./evl.js"
 
 const input = document.getElementById("input");
 const output = document.getElementById("output");
@@ -50,7 +51,7 @@ function processInput() {
   }
 
   output.innerHTML = "";
-  let tokens = tokenise("(begin " + inS + ")");
+  let tokens = tokenise(inS);
   let e = nil;
 
   try {
@@ -60,14 +61,12 @@ function processInput() {
     return;
   }
 
-  /*
   try {
-    e = lisp(e, initialEnvironment);
+    e = evl(e, nil);
   } catch (e) {
     output.innerHTML = span("bad", e.message);
     return;
   }
-  */
 
   let o = new Stream([]);
   print(o, e);

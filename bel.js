@@ -5,7 +5,8 @@ import { display } from "./io.js";
 import { print } from "./print.js";
 import { Stream } from "./stream.js";
 
-const s = tokenise("(hello \\a \\b \\c \\space 1 2 3 for|two \"string\")");
+// check ok
+const s = tokenise("ok");
 const e = parse(s);
 
 const o = new Stream([]);
