@@ -3,7 +3,7 @@
 import { char, symbol } from "./type.js";
 import { pair, car, cdr, cadr, cddr, caddr, cdddr, get, join, list, reverse, smark, vmark, xdr } from "./pair.js";
 import { nil, o, s_after, s_apply, s_bad_clo, s_bind, s_body, s_car, s_cdr, s_ccc, s_char, s_clo, s_d, s_destruct, s_dyn, s_env, s_env_add, s_err, s_evcall, s_fut, s_globe, s_id, s_if, s_join, s_lit, s_literal_parm, s_loc, s_mac, s_mistype, s_malformed, s_prim, s_prot, s_quote, s_scope, s_thread, s_unbound, s_unfindable, s_where, s_xar, s_xdr, t } from "./sym.js";
-import { binding, dropS, init, inwhere, popR, pushR, pushS, regA, regE, regG, regS, regR, result, thread, tick } from "./vm.js";
+import { binding, dropS, init, inwhere, popR, pushEA, pushR, pushS, regA, regE, regG, regS, regR, resetS, result, setR, thread, tick } from "./vm.js";
 import { pr } from "./print.js";
 
 function atom(e) {
@@ -298,6 +298,59 @@ function applyclo(parms, args, env, body) {
   pushS(fu(s_env, list(parms, args, env)), nil);
 }
 
+function protectd(x) {
+  return pair(x) && car(x) === smark && cadr(x) === s_prot || cadr(x) === s_bind;
+}
+
+function mem(x, xs) {
+  while (xs !== nil) {
+    if (x === car(xs)) {
+      return true;
+    }
+
+    xs = cdr(xs);
+  }
+
+  return false;
+}
+
+function applycont(s2, r2, args) {
+  if (args === nil || cdr(args) !== nil) {
+    // should only be one arg
+    sigerr(s_wrong_no_args);
+    return;
+  }
+
+  // do the stuff in s2 but do the prot/bind stuff in S first (if it's not in s2)
+  // push s2 onto the stack
+  let keep = reverse(s2, nil);
+
+  while (keep !== nil) {
+    pushEA(car(keep));
+    keep = cdr(keep);
+  }
+
+  let s = regS();
+  resetS();
+  keep = nil;
+
+  // keep prot or bind items from the stack, if they're not in s2
+  while (s !== nil) {
+    let i = car(s);
+    if (protectd(i) && !mem(i, s2)) {
+      keep = join(i, keep);
+    }
+  }
+
+  // search has reversed it so we can just push it on
+  while (keep !== nil) {
+    pushEA(car(keep));
+    keep = cdr(keep);
+  }
+
+  setR(join(car(args), r2));
+}
+
 function applylit(f, args) {
   // if inwhere and calling car or cdr need to wrap somehow?
 
@@ -344,12 +397,27 @@ function applylit(f, args) {
   }
 
   if (tag === s_cont) {
+    let s2, r2;
 
+    if (rest === nil) {
+      s2 = nil;
+      r2 = nil;
+    } else {
+      s2 = car(rest);
+
+      if (cdr(rest) === nil) {
+        r2 = nil;
+      } else {
+        r2 = cadr(rest);
+      }
+    }
+
+    if (okstack(s2) && proper(r2)) {
+      applycont(s2, r2, args);
+    }
   }
 
-  console.log("applylit");
-  pr(f);
-  pr(args);
+  throw new Error("bad lit -- APPLYLIT");
 }
 
 function applyf(f, args) {

@@ -53,6 +53,14 @@ function pushP(s, r) {
   }
 }
 
+export function resetS() {
+  S = nil;
+}
+
+export function pushEA(s) {
+  S = join(s, S);
+}
+
 export function pushS(e, a) {
   let ea = l2(e, a);
   S = join(ea, S);
@@ -170,6 +178,10 @@ export function popR(e) {
   R = cdr(R);
 
   return r;
+}
+
+export function setR(r) {
+  R = r;
 }
 
 export function tick() {
