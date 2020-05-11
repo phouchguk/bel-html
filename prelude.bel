@@ -1,0 +1,67 @@
+(xdr (car (where no t)) (lit clo nil
+  (x)
+  (id x nil)))
+
+(xdr (car (where pair t)) (lit clo nil
+  (x)
+  (id (type x) 'pair)))
+
+(xdr (car (where atom t)) (lit clo nil
+  (x)
+  (no (pair x))))
+
+(xdr (car (where reduce t)) (lit clo nil
+  (f xs)
+  (if (no (cdr xs))
+      (car xs)
+      (f (car xs) (reduce f (cdr xs))))))
+
+(xdr (car (where cons t)) (lit clo nil
+  args
+  (reduce join args)))
+
+(xdr (car (where append t)) (lit clo nil
+  args
+  (if (no (cdr args)) (car args)
+      (no (car args)) (apply append (cdr args))
+                      (cons (car (car args))
+                            (apply append (cdr (car args))
+                                          (cdr args))))))
+
+(xdr (car (where list t)) (lit clo nil
+  args
+  (append args nil)))
+
+(xdr (car (where bqex t)) (lit clo nil
+  (x)
+  (if (atom x)            (list 'quote x)
+      (id (car x) 'comma) (car (cdr x))
+      (pair (car x))      (if (id (car (car x)) 'comma-at)
+                              (list 'append (car (cdr (car x))))
+                              (list 'join (bqex (car x)) (bqex (cdr x))))
+      (list 'join (bqex (car x)) (bqex (cdr x))))))
+
+(xdr (car (where set t)) (lit mac (lit clo nil
+  (var val)
+  `(xdr (car (where ,var t)) ,val))))
+
+(set fn (lit mac (lit clo nil (parms . body)
+  (if (no (cdr body))
+      `(list 'lit 'clo scope ',parms ',(car body))
+      `(list 'lit 'clo scope ',parms '(do ,@body))))))
+
+(set uvar (fn () (list vmark)))
+
+(set do (lit mac (fn args
+  (reduce (fn (x y)
+            (list (list 'fn (uvar) y) x))
+          args))))
+
+(set macro (lit mac (fn args
+  `(list 'lit 'mac (fn ,@args)))))
+
+(set def (macro (n . rest)
+  `(set ,n (fn ,@rest))))
+
+(set mac (macro (n . rest)
+  `(set ,n (macro ,@rest))))
