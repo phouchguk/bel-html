@@ -3,7 +3,7 @@
 import { toNum } from "./type.js";
 import { join, pair, car, cdr, cadr, cddr, caddr, get, l2, list, reverse, smark, xdr } from "./pair.js";
 import { nil, s_bind, s_loc, s_lock, sym } from "./sym.js";
-import { pr } from "./print.js";
+//import { pr } from "./print.js";
 
 // STACKS
 
@@ -173,7 +173,7 @@ export function pushR(e) {
   R = join(e, R);
 }
 
-export function popR(e) {
+export function popR() {
   let r = car(R);
   R = cdr(R);
 

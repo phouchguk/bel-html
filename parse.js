@@ -1,7 +1,7 @@
 "use strict";
 
 import { CHR_PFX, toChar, toNum } from "./type.js"
-import { join, car, cdr, reverse } from "./pair.js"
+import { join, reverse } from "./pair.js"
 import { nil, s_quote, sym, t } from "./sym.js"
 import { Stream } from "./stream.js"
 

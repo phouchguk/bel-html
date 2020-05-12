@@ -10,8 +10,8 @@ import { bel } from "./evl.js"
 const input = document.getElementById("input");
 const output = document.getElementById("output");
 
-const stdin = document.getElementById("stdin");
-const stdout = document.getElementById("stdout");
+//const stdin = document.getElementById("stdin");
+//const stdout = document.getElementById("stdout");
 
 function categorise(t) {
   if (t === "(" || t === ")") {
@@ -24,7 +24,7 @@ function categorise(t) {
 
   let n = parseInt(t, 10);
 
-  if (isNaN(t)) {
+  if (isNaN(n)) {
     return "sym";
   }
 
