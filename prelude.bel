@@ -62,12 +62,12 @@
 
 (set uvar (fn () (list vmark)))
 
-(set do (lit mac (fn args
+(set do (lit mac (lit clo nil args
   (reduce (fn (x y)
             (list (list 'fn (uvar) y) x))
           args))))
 
-(set macro (lit mac (fn args
+(set macro (lit mac (lit clo nil args
   `(list 'lit 'mac (fn ,@args)))))
 
 (set def (macro (n . rest)

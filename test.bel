@@ -51,4 +51,53 @@
   (e)
   (bqex e))))
 
+(xdr (car (where set t)) (lit mac (lit clo nil
+  (var val)
+  `(xdr (car (where ,var t)) ,val))))
+
+(set fn (lit mac (lit clo nil (parms . body)
+  (if (no (cdr body))
+      `(list 'lit 'clo scope ',parms ',(car body))
+      `(list 'lit 'clo scope ',parms '(do ,@body))))))
+
+(set uvar (fn () (list vmark)))
+
+(set do (lit mac (lit clo nil args
+  (reduce (fn (x y)
+            (list (list 'fn (uvar) y) x))
+          args))))
+
+(set macro (lit mac (lit clo nil args
+  `(list 'lit 'mac (fn ,@args)))))
+
+(set def (macro (n . rest)
+  `(set ,n (fn ,@rest))))
+
+(set mac (macro (n . rest)
+  `(set ,n (macro ,@rest))))
+
+(def all (f xs)
+  (if (no xs)      t
+      (f (car xs)) (all f (cdr xs))
+                   nil))
+
+(def some (f xs)
+  (if (no xs)      nil
+      (f (car xs)) xs
+                   (some f (cdr xs))))
+
+(def snoc args
+  (append (car args) (cdr args)))
+
+(def map (f . ls)
+  (if (no ls)       nil
+      (some no ls)  nil
+      (no (cdr ls)) (cons (f (car (car ls)))
+                          (map f (cdr (car ls))))
+                    (cons (apply f (map car ls))
+                          (apply map f (map cdr ls)))))
+
+(mac let (parms val . body)
+  `((fn (,parms) ,@body) ,val))
+
 'test-ok
