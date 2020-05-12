@@ -6,6 +6,10 @@ export function Stream(tx) {
   this.len = tx.length;
 }
 
+Stream.prototype.eof = function() {
+  return this.i === this.len;
+}
+
 Stream.prototype.peek = function() {
   if (this.i === this.len) {
     return null;

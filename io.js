@@ -53,19 +53,25 @@ function processInput() {
   output.innerHTML = "";
   let tokens = tokenise(inS);
   let e = nil;
+  let run = true;
 
-  try {
-    e = parse(tokens);
-  } catch (err) {
-    output.innerHTML = span("bad-parse", err.message);
-    return;
-  }
+  while (run && !tokens.eof()) {
+    try {
+      e = parse(tokens);
+    } catch (err) {
+      run = false;
+      output.innerHTML = span("bad-parse", err.message);
 
-  try {
-    e = bel(e);
-  } catch (e) {
-    output.innerHTML = span("bad", e.message);
-    return;
+      return;
+    }
+
+    try {
+      e = bel(e);
+    } catch (e) {
+      run = false;
+      output.innerHTML = span("bad", e.message);
+      return;
+    }
   }
 
   let o = new Stream([]);
@@ -80,5 +86,18 @@ function keyUp(e) {
   }
 }
 
-input.addEventListener("keyup", keyUp, true);
-input.focus();
+var request = new XMLHttpRequest();
+request.open("GET", "/test.bel", true);
+
+request.onload = function() {
+  if (this.status >= 200 && this.status < 400) {
+    input.value = this.response;
+    processInput();
+    input.value = "";
+
+    input.addEventListener("keyup", keyUp, true);
+    input.focus();
+  }
+};
+
+request.send();

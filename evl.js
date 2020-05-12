@@ -2,7 +2,7 @@
 
 import { char, symbol } from "./type.js";
 import { pair, car, cdr, cadr, cddr, caddr, cdddr, get, join, list, reverse, smark, vmark, xdr } from "./pair.js";
-import { nil, o, s_after, s_apply, s_bad_clo, s_bind, s_body, s_car, s_cdr, s_ccc, s_char, s_clo, s_d, s_destruct, s_dyn, s_env, s_env_add, s_err, s_evcall, s_fut, s_globe, s_id, s_if, s_join, s_lit, s_literal_parm, s_loc, s_mac, s_mistype, s_malformed, s_prim, s_prot, s_quote, s_scope, s_symbol, s_thread, s_type, s_unbound, s_unfindable, s_vmark, s_where, s_xar, s_xdr, t } from "./sym.js";
+import { nil, o, s_after, s_apply, s_bad_clo, s_bind, s_body, s_car, s_cdr, s_ccc, s_char, s_clo, s_d, s_destruct, s_dyn, s_env, s_env_add, s_err, s_evcall, s_fut, s_globe, s_id, s_if, s_join, s_lit, s_literal_parm, s_loc, s_mac, s_mistype, s_malformed, s_pair, s_prim, s_prot, s_quote, s_scope, s_symbol, s_thread, s_type, s_unbound, s_unfindable, s_vmark, s_where, s_xar, s_xdr, t } from "./sym.js";
 import { binding, dropS, init, inwhere, popR, pushEA, pushR, pushS, regA, regE, regG, regS, regR, resetS, result, setR, thread, tick } from "./vm.js";
 import { pr } from "./print.js";
 
@@ -148,6 +148,12 @@ function applyprim(f, args) {
 
   if (f === s_type) {
     let a = car(args);
+
+    if (pair(a)) {
+      pushR(s_pair);
+      return;
+    }
+
     let typ = a >> 29;
 
     switch (typ) {
@@ -157,10 +163,6 @@ function applyprim(f, args) {
 
     case 1:
       pushR(s_char);
-      return;
-
-    case 2:
-      pushR(s_pair);
       return;
     }
 
