@@ -1,0 +1,41 @@
+(xdr (car (where id t))   (lit prim id))
+(xdr (car (where join t)) (lit prim join))
+(xdr (car (where cdr t))  (lit prim cdr))
+(xdr (car (where xar t))  (lit prim xar))
+(xdr (car (where type t)) (lit prim type))
+
+(xdr (car (where no t)) (lit clo nil
+  (x)
+  (id x nil)))
+
+(xdr (car (where pair t)) (lit clo nil
+  (x)
+  (id (type x) 'pair)))
+
+(xdr (car (where atom t)) (lit clo nil
+  (x)
+  (no (pair x))))
+
+(xdr (car (where reduce t)) (lit clo nil
+  (f xs)
+  (if (no (cdr xs))
+      (car xs)
+      (f (car xs) (reduce f (cdr xs))))))
+
+(xdr (car (where cons t)) (lit clo nil
+  args
+  (reduce join args)))
+
+(xdr (car (where append t)) (lit clo nil
+  args
+  (if (no (cdr args)) (car args)
+      (no (car args)) (apply append (cdr args))
+                      (cons (car (car args))
+                            (apply append (cdr (car args))
+                                          (cdr args))))))
+
+(xdr (car (where list t)) (lit clo nil
+  args
+  (append args nil)))
+
+'test-ok
