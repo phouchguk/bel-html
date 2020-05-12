@@ -87,7 +87,7 @@ function keyUp(e) {
 }
 
 var request = new XMLHttpRequest();
-request.open("GET", "/prelude.bel", true);
+request.open("GET", "prelude.bel", true);
 
 request.onload = function() {
   if (this.status >= 200 && this.status < 400) {
