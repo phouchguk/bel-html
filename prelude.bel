@@ -100,4 +100,15 @@
 (mac let (parms val . body)
   `((fn (,parms) ,@body) ,val))
 
+(mac or args
+  (if (no args)
+      nil
+      (let v (uvar)
+        `(let ,v ,(car args)
+           (if ,v ,v (or ,@(cdr args)))))))
+
+(mac and args
+  (reduce (fn es (cons 'if es))
+          (or args '(t))))
+
 'prelude-ok

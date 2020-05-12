@@ -2,7 +2,7 @@
 
 import { CHR_PFX, toChar, toNum } from "./type.js"
 import { join, reverse } from "./pair.js"
-import { nil, s_quote, sym, t } from "./sym.js"
+import { nil, s_, s_fn, s_quote, sym, t } from "./sym.js"
 import { Stream } from "./stream.js"
 
 const STRING_ESC = "¬";
@@ -50,6 +50,8 @@ export function tokenise(s) {
         .replace(/,@/g, " " + COMMA_AT + " ")
         .replace(/\(/g, " ( ")
         .replace(/\)/g, " ) ")
+        .replace(/\[/g, " [ ")
+        .replace(/\]/g, " ] ")
         .replace(/'/g, " ' ")
         .replace(/`/g, " ` ")
         .replace(/,/g, " , ")
@@ -117,7 +119,7 @@ function parseList(s) {
       return l;
     }
 
-    if (t === ")") {
+    if (t === ")" || t === "]") {
       s.pop();
       return reverse(l, nil);
     }
@@ -145,6 +147,11 @@ export function parse(s) {
 
   if (delims[t]) {
     return join(delims[t], join(parse(s), nil));
+  }
+
+  if (t === "[") {
+    let l = parseList(s);
+    return join(s_fn, join(join(s_, nil), join(l, nil)));
   }
 
   if (t === "(") {
