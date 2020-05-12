@@ -63,9 +63,10 @@ export function tokenise(s) {
 var delims = {
   "'": s_quote,
   "`": sym("bquote"),
-  ",": sym("comma"),
-  UNQUOTE_SPLICE: sym("comma-at")
+  ",": sym("comma")
 };
+
+delims[COMMA_AT] = sym("comma-at");
 
 function getChar(t) {
   const len = CHR_PFX.length;

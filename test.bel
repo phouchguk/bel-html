@@ -38,4 +38,17 @@
   args
   (append args nil)))
 
+(xdr (car (where bqex t)) (lit clo nil
+  (x)
+  (if (atom x)            (list 'quote x)
+      (id (car x) 'comma) (car (cdr x))
+      (pair (car x))      (if (id (car (car x)) 'comma-at)
+                              (list 'append (car (cdr (car x))))
+                              (list 'join (bqex (car x)) (bqex (cdr x))))
+      (list 'join (bqex (car x)) (bqex (cdr x))))))
+
+(xdr (car (where bquote t)) (lit mac (lit clo nil
+  (e)
+  (bqex e))))
+
 'test-ok

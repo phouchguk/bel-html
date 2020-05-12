@@ -533,6 +533,7 @@ function vref(v) {
   if (val) {
     pushR(cdr(val));
   } else {
+    console.log("can't find: ", getSym(v));
     sigerr(join(s_unbound, join(v, nil)));
   }
 }
