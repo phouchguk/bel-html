@@ -201,4 +201,23 @@
   (cons (cons k v)
         (rem k kvs (fn (x y) (f (car x) y)))))
 
+(def rev (xs)
+  (if (no xs)
+      nil
+      (snoc (rev (cdr xs)) (car xs))))
+
+(def snap (xs ys (o acc))
+  (if (no xs)
+      (list acc ys)
+      (snap (cdr xs) (cdr ys) (snoc acc (car ys)))))
+
+(def udrop (xs ys)
+  (cadr (snap xs ys)))
+
+(def idfn (x)
+  x)
+
+(def is (x)
+  [= _ x])
+
 'prelude-ok
