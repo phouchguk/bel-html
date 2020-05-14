@@ -336,6 +336,9 @@ function applycont(s2, r2, args) {
     return;
   }
 
+  let s = regS();
+  resetS();
+
   // do the stuff in s2 but do the prot/bind stuff in S first (if it's not in s2)
   // push s2 onto the stack
   let keep = reverse(s2, nil);
@@ -345,16 +348,17 @@ function applycont(s2, r2, args) {
     keep = cdr(keep);
   }
 
-  let s = regS();
-  resetS();
   keep = nil;
 
   // keep prot or bind items from the stack, if they're not in s2
   while (s !== nil) {
     let i = car(s);
+
     if (protectd(i) && !mem(i, s2)) {
       keep = join(i, keep);
     }
+
+    s = cdr(s);
   }
 
   // search has reversed it so we can just push it on
@@ -415,8 +419,6 @@ function applylit(f, args) {
     return;
   }
 
-  console.log("applylit", getSym(tag));
-
   if (tag === s_cont) {
     let s2, r2;
 
@@ -435,6 +437,7 @@ function applylit(f, args) {
 
     if (okstack(s2) && proper(r2)) {
       applycont(s2, r2, args);
+      return;
     }
   }
 
