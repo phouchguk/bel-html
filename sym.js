@@ -1,6 +1,6 @@
 "use strict";
 
-const syms = ["nil", "t", "o", "apply", "lit", "scope", "globe", "unbound", "err", "malformed", "quote", "if", "fut", "lock", "where", "loc", "unfindable", "d", "dyn", "bind", "after", "prot", "ccc", "cont", "thread", "evcall", "mac", "clo", "prim", "car", "cdr", "xar", "xdr", "join", "id", "body", "env", "destruct", "env-add", "literal-parm", "char", "mistype", "bad-clo", "vmark", "type", "symbol", "pair", "fn", "_"];
+const syms = ["nil", "t", "o", "apply", "lit", "scope", "globe", "unbound", "err", "malformed", "quote", "if", "fut", "lock", "where", "loc", "unfindable", "d", "dyn", "bind", "after", "prot", "ccc", "cont", "thread", "evcall", "mac", "clo", "prim", "car", "cdr", "xar", "xdr", "join", "id", "body", "env", "destruct", "env-add", "literal-parm", "char", "mistype", "bad-clo", "vmark", "type", "symbol", "pair", "fn", "_", "underargs", "atom-arg", "overargs", "wrong-no-args", "cannot-apply", "bad-lit"];
 
 export const nil = 0;
 export const t = 1;
@@ -52,6 +52,13 @@ export const s_symbol = 45;
 export const s_pair = 46;
 export const s_fn = 47;
 export const s_ = 48;
+export const s_underargs = 49;
+export const s_atom_arg = 50;
+export const s_overargs = 51;
+export const s_wrong_no_args = 52;
+export const s_cannot_apply = 53;
+export const s_bad_lit = 54;
+
 
 export function sym(s) {
   let i = syms.indexOf(s);
